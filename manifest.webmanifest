@@ -1,0 +1,11 @@
+{
+  "name": "NACRE — Аквариум",
+  "short_name": "NACRE",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "browser",
+  "theme_color": "#06171e",
+  "background_color": "#04101a",
+  "lang": "ru"
+}
