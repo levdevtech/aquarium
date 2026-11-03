@@ -1,0 +1,9 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),read=name=>fs.readFile(path.join(root,'src',name),'utf8');
+async function emit(stem,ext,text){const h=createHash('sha256').update(text).digest('hex').slice(0,12),name=`${stem}.${h}.${ext}`;await fs.writeFile(path.join(root,'assets',name),text);return name;}
+await fs.mkdir(path.join(root,'assets'),{recursive:true});
+const physics=await emit('physics','mjs',await read('physics.mjs')),app=await emit('aquarium','mjs',(await read('aquarium.mjs')).replace("'./physics.mjs'",JSON.stringify('./'+physics))),boot=await emit('boot','mjs',(await read('boot.mjs')).replace("'./aquarium.mjs'",JSON.stringify('./'+app))),styles=await emit('styles','css',await read('styles.css'));
+let localThree=false;try{localThree=JSON.parse(await fs.readFile(path.join(root,'site-config.json'),'utf8')).localThree===true;}catch(e){if(e.code!=='ENOENT')throw e;}
+let html=(await read('index.template.html')).replace('__STYLES__','./assets/'+styles).replace('__BOOT__','./assets/'+boot);
+if(localThree){for(const name of ['build/three.module.js','examples/jsm/controls/OrbitControls.js','LICENSE','checksums.json'])await fs.access(path.join(root,'assets/vendor/three',name));html=html.replace('https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js','./assets/vendor/three/build/three.module.js').replace('https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/','./assets/vendor/three/examples/jsm/');}
+await fs.writeFile(path.join(root,'index.html'),html);await fs.writeFile(path.join(root,'asset-manifest.json'),JSON.stringify({version:'4.3.0',source:'supplied NACRE IV',three:'0.169.0',localThree,assets:{physics,app,boot,styles}},null,2)+'\n');console.log('Built Pages site, localThree='+localThree);

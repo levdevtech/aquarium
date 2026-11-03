@@ -1,0 +1,2 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),out=path.join(root,'site');await fs.rm(out,{recursive:true,force:true});await fs.mkdir(out,{recursive:true});for(const name of ['index.html','.nojekyll','404.html','manifest.webmanifest','asset-manifest.json','assets'])await fs.cp(path.join(root,name),path.join(out,name),{recursive:true});console.log('Deployment-only files in site/');
